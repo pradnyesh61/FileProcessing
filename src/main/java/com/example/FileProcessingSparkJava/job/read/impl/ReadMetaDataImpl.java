@@ -36,39 +36,32 @@ public class ReadMetaDataImpl implements ReadMetaData {
     }
 
     @Override
-    public List<StructField> read(String metaDataFilePath) throws URISyntaxException, IOException {
+    public List<ColumnMetadata> read(String metaDataFilePath) throws URISyntaxException, IOException {
         LOGGER.info("reading MetaData ::");
-        List<StructField> fields = new ArrayList<>();
-
         List<ColumnMetadata> columnMetadataList = new ArrayList<>();
 
         List<String> lines = test(metaDataFilePath);
 
         for (String line : lines) {
             String[] parts = line.split(COMMA);
-            String columnName = parts[0];
-
-            fields.add(DataTypes.createStructField(columnName, DataTypes.StringType, true));
             columnMetadataList.add(new ColumnMetadata(parts[0],parts[1], Integer.parseInt(parts[2]), Integer.parseInt(parts[3])));
-
         }
 
-        return fields;
+        return columnMetadataList;
     }
 
     @Override
-    public Dataset<Row> readFlatFile(String filePath, StructType schema) {
+    public Dataset<Row> readFlatFile(String filePath) {
         LOGGER.info("reading flatFile ::");
 
-        Dataset<Row> datasetRow = sparkSession.read()
-                .option("header", "true")
-                .schema(schema)
-                .csv(getClass().getClassLoader().getResource(filePath).toString());
+//        Dataset<Row> datasetRow = sparkSession.read()
+//                .option("header", "true")
+//                .csv(getClass().getClassLoader().getResource(filePath).toString());
+
+        Dataset<Row> datasetRow = sparkSession.read().text(getClass().getClassLoader().getResource(filePath).toString());
 
         datasetRow.show();
-
         datasetRow.printSchema();
-
 
         return datasetRow;
     }
